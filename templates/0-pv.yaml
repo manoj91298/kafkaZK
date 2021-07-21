@@ -1,0 +1,47 @@
+{{- if eq .Values.zkStorage.type "NFS" -}} {{- if  eq .Values.zkStorage.exists "false" -}}
+{{- $root := . -}}
+{{- range $i, $e := until (int .Values.zookeeper.statefulSet.replicas) -}}
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: nfs-pv-zk{{ $i }}
+  labels:
+    type: nfs
+    app: {{ $root.Values.zookeeper.name }}
+spec:
+  capacity:
+    storage: {{ $root.Values.zkStorage.capacity }}
+  accessModes:
+    - ReadWriteMany
+  nfs:
+    server: {{ $root.Values.zkStorage.server }}
+    path: {{ $root.Values.zkStorage.path }}/{{ $root.Values.zkStorage.folderName }}-{{ $i }}
+  storageClassName: {{ $root.Values.zkStorage.storageClass }}
+{{ end }}
+{{- end }} {{- end }}
+
+{{- if eq .Values.kafkaStorage.type "NFS" -}} {{- if eq .Values.kafkaStorage.exists "false" -}}
+{{- $root := . -}}
+{{- range $i, $e := until (int .Values.kafka.statefulSet.replicas) -}}
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: nfs-pv-kafka{{ $i }}
+  labels:
+    type: nfs
+    app: {{ $root.Values.kafka.name }}
+spec:
+  capacity:
+    storage: {{ $root.Values.kafkaStorage.capacity }}
+  accessModes:
+    - ReadWriteMany
+  nfs:
+    server: {{ $root.Values.kafkaStorage.server }}
+    path: {{ $root.Values.kafkaStorage.path }}/{{ $root.Values.kafkaStorage.folderName }}-{{ $i }}
+  storageClassName: {{ $root.Values.kafkaStorage.storageClass }}
+{{ end }}
+{{- end }} {{- end }}
+---
+

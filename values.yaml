@@ -1,0 +1,88 @@
+# general info
+# affinity
+affinityTopologyKey: "statefulset.kubernetes.io/pod-name"
+
+# pod management
+updateStrategy: "RollingUpdate"
+podManagementPolicy: "Parallel"		#Parallel or OrderedReady
+
+# namespace
+namespace: "msgbus"
+
+#########################################################
+#info for specific parts
+
+# values for storage
+zkStorage:
+  exists: "false"
+  type: "NFS"			# set to "NFS" if deploying on multinode cluster; if set to "NFS" then each ZK pod will get a persistent volume
+  capacity: "10Gi"
+  server: 167.254.204.56
+  path: "/mnt/k8sMount/ZK"	# path on NFS server for general zk storage; paths for storage will be "/mnt/k8sMount/ZK/zkOut-#" (see below)
+  folderName: "zkOut"		# head name of folder for each zk storage; folder must be in similar format of "zkOut-#" where # is the zk replica number and it must exist
+  storageClass: "manual"	# if you define a custom storageClass, set it here
+  policy: "Retain"
+kafkaStorage:
+  exists: "false"
+  type: "NFS"			# same as above
+  capacity: "10Gi"
+  server: 167.254.204.56
+  path: "/mnt/k8sMount/kafka"
+  folderName: "kafkaOut"	# similar as above: folder must be in similar format of "kafkaOut-#" and it must exist
+  storageClass: "manual"
+  policy: "Retain"
+
+# values for zookeeper
+zookeeper:
+  name: zk			# this will define the service name in the form of <name>-svc on the network
+  ports:
+    server: 2888
+    client: 2181
+    leaderelection: 3888
+  config:
+    jvm.heap: "1G"		# JVM heap size
+    tick: "2000"		# milliseconds of wall clock that corresponds to a tick
+    init: "10"			# number of ticks ensemble member is allowed to perform leader election
+    sync: "5"			# number of ticks a follower can lag behind leader
+    client.cnxns: "200"		# max number of client concurrent client connections server will accept
+    snap.retain: "3"		# number of snapshots Zookeeper will retain if purge.interval > 0
+    purge.interval: "0"		# delay in hours between log and snapshot cleanups
+  disruption:
+    minAvailable: 2
+  statefulSet:
+    replicas: 3			# number of brokers to run
+    terminationPeriodSec: 300
+    imageName: "nsprash/zk-deploy:v1"	# docker image
+    imagePullPolicy: "Always"
+    resources:
+      memory: "1Gi"
+      cpu: "500m"
+    check:			# used to test if zk is running and healthy
+      initDelaySec: 10
+      timeoutSec: 5
+    internalPath: "/var/lib/zookeeper"		# internal path for mounting to persistent storage
+    volumeClaimTemplate:
+      storageSize: "3Gi"			# how much each pod gets to write
+    nodeName: "apps"				# which node type to run the pod on
+    
+
+# values for kafka
+kafka:				# values similar as above
+  name: kafka
+  port:
+    name: "server"
+    port: 9093
+  disruption:
+    minAvailable: 2
+  statefulSet:
+    replicas: 3
+    terminationPeriodSec: 300
+    imageName: "nsprash/kafka-deploy:v1"
+    imagePullPolicy: "Always"
+    resources:
+      memory: "512Mi"
+      cpu: "200m"
+    internalPath: "/var/lib/kafka"
+    volumeClaimTemplate:
+      storageSize: "3Gi"
+    nodeName: "apps"

@@ -1,5 +1,13 @@
 # Deployment of kafka-zookeeper on kubernetes cluster
 
+## Prerequisite:
+
+Kubernetes v1.21.4
+
+HELM v2.17
+
+Docker 20.10.2
+
 #### Create NFS Server setup on kubernetes cluster  - watch my Deploy dynamic NFS provisioning video for more details.
 #### Create mount points in NFS server as below mentioned.
 ```
@@ -20,6 +28,7 @@
 Client: &version.Version{SemVer:"v2.17.0", GitCommit:"a690bad98af45b015bd3da1a41f6218b1a451dbe", GitTreeState:"clean"}
 Server: &version.Version{SemVer:"v2.17.0", GitCommit:"a690bad98af45b015bd3da1a41f6218b1a451dbe", GitTreeState:"clean"}
 ```
+#### Change the NFS Server IP in values.yaml file.
 #### Deploy Apache kafka and zookeeper with below single cmd.
 ```
 helm install --name kafkazk .

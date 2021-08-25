@@ -33,7 +33,19 @@ Server: &version.Version{SemVer:"v2.17.0", GitCommit:"a690bad98af45b015bd3da1a41
 ```
 helm install --name kafkazk .
 ```
+#### Verify Pod and Service status.
+```
+kubectl get all -n msgbus
+```
+#### Create a test-demo topic and receive message from the other end with verification.
+```
+kubectl -n msgbus exec -ti testclient -- ./bin/kafka-console-producer.sh --broker-list kafka-svc.msgbus:9093 --topic test-demo
+
+kubectl -n msgbus exec -ti testclient -- ./bin/kafka-console-consumer.sh --bootstrap-server kafka-svc.msgbus:9093 --topic test-demo --from-beginning
+```
+
 #### To Delete kafka-zookeeper
 ```
 helm delete --purge kafkazk
 ```
+

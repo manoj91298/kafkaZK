@@ -1,0 +1,85 @@
+apiVersion: kafka.strimzi.io/v1beta2
+kind: Kafka
+metadata:
+  name: kafka
+spec:
+  kafka:
+    replicas: 1
+    listeners:
+      - name: plain
+        port: 9092
+        type: internal
+        tls: false
+        configuration:
+          useServiceDnsDomain: true
+      - name: tls
+        port: 9093
+        type: internal
+        tls: true
+        configuration:
+          useServiceDnsDomain: true
+    config:
+      default.replication.factor: 1
+      max.message.bytes: "209715200"
+      message.max.bytes: "209715200"
+      min.insync.replicas: 1
+      offsets.topic.replication.factor: 1
+      replica.fetch.max.bytes: "209715200"
+      transaction.state.log.min.isr: 1
+      transaction.state.log.replication.factor: 1
+    storage:
+      class: standard
+      type: jbod
+      volumes:
+        - deleteClaim: false
+          id: 0
+          size: 4Gi
+          type: persistent-claim
+    resources:
+      requests:
+        cpu: 10m
+        memory: 735Mi
+    template:
+      persistentVolumeClaim:
+        metadata:
+          labels:
+            app: kafka
+  zookeeper:
+    replicas: 1
+    storage:
+      class: standard
+      deleteClaim: false
+      size: 4Gi
+      type: persistent-claim
+    resources:
+      requests:
+        cpu: 10m
+        memory: 330Mi
+    template:
+      persistentVolumeClaim:
+        metadata:
+          labels:
+            app: zookeeper
+  entityOperator:
+    topicOperator:
+      resources:
+        limits:
+          memory: 524Mi
+        requests:
+          cpu: 10m
+          memory: 512Mi
+    userOperator: {}
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaBridge
+metadata:
+  name: kafka-bridge
+spec:
+  replicas: 1
+  bootstrapServers: kafka-kafka-bootstrap:9092
+  http:
+    port: 8080
+  resources:
+    requests:
+      cpu: 10m
+      memory: 330Mi

@@ -1,0 +1,5 @@
+language: typescript
+app: npx ts-node main.ts
+imports:
+  - k8s
+  - https://github.com/strimzi/strimzi-kafka-operator/releases/download/0.32.0/strimzi-crds-0.32.0.yaml
